@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Map with Folium</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+        }
+        #monthDropdown {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Dropdown menu -->
+    <select id="monthDropdown">
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+    </select>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var map = L.map('map').setView([0.9036, 36.1477], 8); // Set initial view and zoom
+
+        // Define basemaps
+        var osm = L.tileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }
+        );
+
+        var cyclOSM = L.tileLayer(
+            'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+                attribution: '<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+        );
+
+        // Create a FeatureGroup for GeoJSON data
+        var geojsonLayer = L.featureGroup().addTo(map);
+
+        // Function to update GeoJSON layer
+        function updateGeoJSON(selectedMonth) {
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/update_map',
+                data: JSON.stringify({ month: selectedMonth }),
+                success: function(data) {
+                    // Clear previous GeoJSON features
+                    geojsonLayer.clearLayers();
+
+                    // Add new GeoJSON features
+                    data.forEach(function(feature) {
+                        var popupContent = feature.popup_content;
+                        var marker = L.circleMarker([feature.latitude, feature.longitude], {
+                            radius: 3,
+                            color: 'orange',
+                            fillColor: 'orange',
+                            fillOpacity: 1
+                        }).bindPopup(popupContent);
+                        geojsonLayer.addLayer(marker);
+                    });
+                }
+            });
+        }
+
+        // Initial call to load GeoJSON data for a default month
+        updateGeoJSON(1);  // Example for default month
+
+        // Dropdown change event listener
+        $('#monthDropdown').change(function() {
+            var selectedMonth = $(this).val();
+            updateGeoJSON(selectedMonth);
+        });
+
+        // Add basemaps and layer control
+        var baseMaps = {
+            "OpenStreetMap": osm,
+            "CyclOSM": cyclOSM
+        };
+
+        L.control.layers(baseMaps, { 'GeoJSON Data': geojsonLayer }, { position: 'topright' }).addTo(map);
+
+        // Add scale control
+        L.control.scale().addTo(map);
+
+    </script>
+</body>
+</html>
