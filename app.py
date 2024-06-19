@@ -1,21 +1,21 @@
 from flask import Flask, render_template, jsonify, request
-import folium
-from folium import LayerControl
 import requests
 
 app = Flask(__name__)
 
-# Function to fetch GeoJSON data using requests
+# URLs of the GeoJSON data for different years
+geojson_url_2021 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/2021_transformed.geojson"
+geojson_url_2022 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/20222_transformed.geojson"
+
+# Function to fetch GeoJSON data
 def fetch_geojson(url):
     response = requests.get(url)
     geojson_data = response.json()
     return geojson_data
 
-# URL of the GeoJSON data
-geojson_url = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/2021_transformed.geojson"
-
 # Fetch GeoJSON data
-geojson_data = fetch_geojson(geojson_url)
+geojson_data_2021 = fetch_geojson(geojson_url_2021)
+geojson_data_2022 = fetch_geojson(geojson_url_2022)
 
 @app.route('/')
 def index():
@@ -23,10 +23,19 @@ def index():
 
 @app.route('/update_map', methods=['POST'])
 def update_map():
+    selected_year = request.json['year']  # Get selected year from JSON POST data
     selected_month = request.json['month']  # Get selected month from JSON POST data
     
+    # Select the appropriate GeoJSON data based on the selected year
+    if selected_year == '2021':
+        selected_geojson_data = geojson_data_2021
+    elif selected_year == '2022':
+        selected_geojson_data = geojson_data_2022
+    else:
+        selected_geojson_data = []
+
     # Filter GeoJSON data based on selected month
-    filtered_features = [feature for feature in geojson_data['features'] if feature['properties']['month'] == int(selected_month)]
+    filtered_features = [feature for feature in selected_geojson_data['features'] if feature['properties']['month'] == int(selected_month)]
     
     # Prepare data to send back as JSON
     data_to_send = []
