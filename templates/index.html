@@ -6,8 +6,14 @@
     <title>Flask Map with Folium</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
         #map {
-            height: 600px;
+            height: calc(100vh - 80px); /* Adjust map height */
+            margin-top: 20px;
         }
         #controls {
             position: absolute;
@@ -15,37 +21,78 @@
             left: 10px;
             z-index: 1000;
             background-color: white;
-            padding: 5px;
+            padding: 10px;
             border-radius: 5px;
-            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        .dropdown-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        select {
+            width: 100%;
+            padding: 5px;
+        }
+        #header {
+            text-align: center;
+            font-size: 24px;
+            margin-top: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        #header img {
+            margin-right: 10px; /* Adjust spacing between image and text */
+            height: 40px; /* Adjust the height of the image */
+            width: auto; /* Maintain aspect ratio */
+        }
+        .leaflet-bottom.leaflet-right {
+            bottom: 10px;
+            right: 10px;
         }
     </style>
 </head>
 <body>
+    <div id="header">
+        <img src="/static/Screenshot%202024-06-19%20180915.png" alt="Logo">
+        HELLO TRACTOR INTERACTIVE MAP
+    </div>
     <div id="map"></div>
 
     <!-- Controls for year and month selection -->
     <div id="controls">
-        <select id="yearDropdown">
-            <option value="2021">2021</option>
-            <option value="2022">2022</option>
-            <option value="2023">2023</option>
-            <!-- Add more years if needed -->
-        </select>
-        <select id="monthDropdown">
-            <option value="1">January</option>
-            <option value="2">February</option>
-            <option value="3">March</option>
-            <option value="4">April</option>
-            <option value="5">May</option>
-            <option value="6">June</option>
-            <option value="7">July</option>
-            <option value="8">August</option>
-            <option value="9">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-        </select>
+        <div class="control-group">
+            <div class="dropdown-title">Year</div>
+            <select id="yearDropdown">
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+                <option value="2023">2023</option>
+                <!-- Add more years if needed -->
+            </select>
+        </div>
+        <div class="control-group">
+            <div class="dropdown-title">Month</div>
+            <select id="monthDropdown">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -112,9 +159,9 @@
                     data.forEach(function(feature) {
                         var popupContent = feature.popup_content;
                         var marker = L.circleMarker([feature.latitude, feature.longitude], {
-                            radius: 5,
-                            color: 'black',
-                            fillColor: 'blue',
+                            radius: 3,
+                            color: 'orange',
+                            fillColor: 'orange',
                             fillOpacity: 1
                         }).bindPopup(popupContent);
                         geojsonLayer.addLayer(marker);
@@ -141,6 +188,12 @@
             var selectedMonth = this.value;
             updateGeoJSON(selectedYear, selectedMonth);
         });
+
+        // Add zoom control to the map
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
     </script>
 </body>
 </html>
+
+
+
