@@ -29,6 +29,7 @@
         <select id="yearDropdown">
             <option value="2021">2021</option>
             <option value="2022">2022</option>
+            <option value="2023">2023</option>
             <!-- Add more years if needed -->
         </select>
         <select id="monthDropdown">
@@ -78,6 +79,7 @@
         // Create FeatureGroups for GeoJSON data
         var geojsonLayer2021 = L.featureGroup();
         var geojsonLayer2022 = L.featureGroup();
+        var geojsonLayer2023 = L.featureGroup();
 
         // Add basemap layers and overlay layers to the map
         L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
@@ -89,12 +91,15 @@
             // Clear previous GeoJSON layers
             geojsonLayer2021.clearLayers();
             geojsonLayer2022.clearLayers();
+            geojsonLayer2023.clearLayers();
 
             // Determine which GeoJSON layer to update based on selected year
             if (selectedYear === '2021') {
                 geojsonLayer = geojsonLayer2021;
             } else if (selectedYear === '2022') {
                 geojsonLayer = geojsonLayer2022;
+            } else if (selectedYear === '2023') {
+                geojsonLayer = geojsonLayer2023;
             }
 
             // Fetch GeoJSON data and add markers
@@ -107,9 +112,9 @@
                     data.forEach(function(feature) {
                         var popupContent = feature.popup_content;
                         var marker = L.circleMarker([feature.latitude, feature.longitude], {
-                            radius: 3,
-                            color: 'orange',
-                            fillColor: 'orange',
+                            radius: 5,
+                            color: 'black',
+                            fillColor: 'blue',
                             fillOpacity: 1
                         }).bindPopup(popupContent);
                         geojsonLayer.addLayer(marker);

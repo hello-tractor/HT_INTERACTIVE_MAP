@@ -6,6 +6,7 @@ app = Flask(__name__)
 # URLs of the GeoJSON data for different years
 geojson_url_2021 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/2021_transformed.geojson"
 geojson_url_2022 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/20222_transformed.geojson"
+geojson_url_2023 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/20233_transformed.geojson"
 
 # Function to fetch GeoJSON data
 def fetch_geojson(url):
@@ -16,6 +17,7 @@ def fetch_geojson(url):
 # Fetch GeoJSON data
 geojson_data_2021 = fetch_geojson(geojson_url_2021)
 geojson_data_2022 = fetch_geojson(geojson_url_2022)
+geojson_data_2023 = fetch_geojson(geojson_url_2023)
 
 @app.route('/')
 def index():
@@ -31,6 +33,8 @@ def update_map():
         selected_geojson_data = geojson_data_2021
     elif selected_year == '2022':
         selected_geojson_data = geojson_data_2022
+    elif selected_year == '2023':
+        selected_geojson_data = geojson_data_2023
     else:
         selected_geojson_data = []
 
