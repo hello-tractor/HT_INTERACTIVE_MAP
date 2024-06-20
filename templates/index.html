@@ -128,8 +128,69 @@
         var geojsonLayer2022 = L.featureGroup();
         var geojsonLayer2023 = L.featureGroup();
 
+        // Load GeoJSON files for counties and wards
+        var countiesLayer = L.geoJson(null, {
+            style: function (feature) {
+                return {
+                    color: "blue",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.1
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                layer.on('mouseover', function (e) {
+                    var popup = L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent('County: ' + feature.properties.name)
+                        .openOn(map);
+                });
+                layer.on('mouseout', function () {
+                    map.closePopup();
+                });
+            }
+        });
+
+        var wardsLayer = L.geoJson(null, {
+            style: function (feature) {
+                return {
+                    color: "green",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.1
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                layer.on('mouseover', function (e) {
+                    var popup = L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent('Ward: ' + feature.properties.name)
+                        .openOn(map);
+                });
+                layer.on('mouseout', function () {
+                    map.closePopup();
+                });
+            }
+        });
+
+        // Fetch the counties GeoJSON data and add to the map
+        $.getJSON("https://raw.githubusercontent.com/sammigachuhi/geojson_files/main/counties_json.json", function(data) {
+            countiesLayer.addData(data).addTo(map);
+        });
+
+        // Fetch the wards GeoJSON data and add to the map
+        $.getJSON("https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/kenya_wards.json", function(data) {
+            wardsLayer.addData(data);
+        });
+
+        // Create layer control for GeoJSON layers
+        var overlayMaps = {
+            "Counties": countiesLayer,
+            "Wards": wardsLayer
+        };
+
         // Add basemap layers and overlay layers to the map
-        L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
+        L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(map);
 
         // Function to update GeoJSON layer
         function updateGeoJSON(selectedYear, selectedMonth) {
