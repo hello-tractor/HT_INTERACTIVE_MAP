@@ -163,7 +163,16 @@
                             color: 'orange',
                             fillColor: 'orange',
                             fillOpacity: 1
-                        }).bindPopup(popupContent);
+                        });
+                        marker.on('mouseover', function(e) {
+                            var popup = L.popup()
+                                .setLatLng(e.latlng)
+                                .setContent(popupContent)
+                                .openOn(map);
+                        });
+                        marker.on('mouseout', function() {
+                            map.closePopup();
+                        });
                         geojsonLayer.addLayer(marker);
                     });
                 }
@@ -194,6 +203,3 @@
     </script>
 </body>
 </html>
-
-
-
