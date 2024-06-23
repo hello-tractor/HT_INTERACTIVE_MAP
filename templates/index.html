@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Times New Roman', Times, serif; /* Use Times New Roman font */
             margin: 0;
             padding: 0;
         }
@@ -24,6 +24,7 @@
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 14px; /* Adjust font size */
         }
         .control-group {
             margin-bottom: 10px;
@@ -36,10 +37,72 @@
             width: 100%;
             padding: 5px;
         }
+        .toggle-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-width: 300px;
+            max-height: 400px;
+            margin-bottom: 10px; /* Adjust maximum width */
+            overflow-y: auto;
+        }
+        .toggle-label {
+            display: inline-block;
+            width: 80px; /* Adjust width of the toggle labels */
+            margin-right: 20px;
+            text-align: right; /* Align text to right of the label */
+        }
+        .switch {
+            display: inline-block;
+            position: relative;
+            width: 40px; /* Adjust width of the switch */
+            height: 20px; /* Adjust height of the switch */
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px; /* Adjust border radius to make round */
+        }
+        .slider.round {
+            border-radius: 20px; /* Adjust border radius to make round */
+        }
+        .slider.round:before {
+            position: absolute;
+            content: "";
+            height: 12px; /* Adjust height of the knob */
+            width: 12px; /* Adjust width of the knob */
+            left: 2px; /* Adjust left position of the knob */
+            bottom: 2px; /* Adjust bottom position of the knob */
+            background-color: white;
+            border-radius: 50%; /* Make the knob round */
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px); /* Adjust the distance the knob moves */
+        }
+        .leaflet-bottom.leaflet-right {
+            bottom: 10px;
+            right: 10px;
+        }
         #header {
             text-align: center;
             font-size: 24px;
-            margin-top: 20px;
+            margin-top: 5px;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -48,13 +111,9 @@
             background-color: #f0f0f0;
         }
         #header img {
-            margin-right: 10px; /* Adjust spacing between image and text */
+            margin-right: 8px; /* Adjust spacing between image and text */
             height: 40px; /* Adjust the height of the image */
             width: auto; /* Maintain aspect ratio */
-        }
-        .leaflet-bottom.leaflet-right {
-            bottom: 10px;
-            right: 10px;
         }
     </style>
 </head>
@@ -92,6 +151,143 @@
                 <option value="11">November</option>
                 <option value="12">December</option>
             </select>
+        </div>
+
+        <!-- Toggle visibility controls -->
+        <div class="toggle-container">
+            <div class="control-group">
+                <label class="toggle-label">County:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="County" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Subcounty:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Subcounty" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Ward:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Ward" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Month:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Month" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Year:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Year" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Temp(mean):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Temp(mean)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-5:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-5" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-50:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-50" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-95:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-95" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-25:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-25" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI (max):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI (max)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI (min):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI (min)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI (mean):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI (mean)" checked>
+                                        <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Rainfall:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Rainfall" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Landcover:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Landcover" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Worldcover (ESA):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Worldcover (ESA)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Agric-Occupation:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Agric-Occupation" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Population:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Population" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Avg-Agri-Pop:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Avg-Agri-Pop" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
         </div>
     </div>
 
@@ -154,43 +350,33 @@
         var wardsLayer = L.geoJson(null, {
             style: function (feature) {
                 return {
-                    color: "green",
-                    weight: 2,
+                    color: "Orange",
+                    weight: 1,
                     opacity: 1,
                     fillOpacity: 0.1
                 };
             },
             onEachFeature: function (feature, layer) {
-                layer.on('mouseover', function (e) {
-                    var popup = L.popup()
-                        .setLatLng(e.latlng)
-                        .setContent('Ward: ' + feature.properties.name)
-                        .openOn(map);
-                });
-                layer.on('mouseout', function () {
-                    map.closePopup();
-                });
+                // Disable pop-up for ward polygons
+                layer.unbindPopup();
             }
         });
 
-        // Fetch the counties GeoJSON data and add to the map
-        $.getJSON("https://raw.githubusercontent.com/sammigachuhi/geojson_files/main/counties_json.json", function(data) {
-            countiesLayer.addData(data).addTo(map);
-        });
-
-        // Fetch the wards GeoJSON data and add to the map
-        $.getJSON("https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/kenya_wards.json", function(data) {
+        // Fetch the wards GeoJSON data (replace with actual URL when available)
+        $.getJSON("https://raw.githubusercontent.com/leoouma/keAdminBounds/main/Kenya_adm2_uscb_2020.geojson", function(data) {
             wardsLayer.addData(data);
         });
 
         // Create layer control for GeoJSON layers
         var overlayMaps = {
-            "Counties": countiesLayer,
             "Wards": wardsLayer
         };
 
         // Add basemap layers and overlay layers to the map
         L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(map);
+
+        // Add zoom control to the map
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         // Function to update GeoJSON layer
         function updateGeoJSON(selectedYear, selectedMonth) {
@@ -220,18 +406,20 @@
                     data.forEach(function(feature) {
                         var popupContent = feature.popup_content;
                         var marker = L.circleMarker([feature.latitude, feature.longitude], {
-                            radius: 3,
-                            color: 'orange',
-                            fillColor: 'orange',
+                            radius: 2,
+                            color: 'black',
+                            fillColor: 'black',
                             fillOpacity: 1
                         });
                         marker.on('mouseover', function(e) {
+                            map.dragging.disable(); // Disable map dragging
                             var popup = L.popup()
                                 .setLatLng(e.latlng)
                                 .setContent(popupContent)
                                 .openOn(map);
                         });
                         marker.on('mouseout', function() {
+                            map.dragging.enable(); // Re-enable map dragging
                             map.closePopup();
                         });
                         geojsonLayer.addLayer(marker);
@@ -258,9 +446,11 @@
             var selectedMonth = this.value;
             updateGeoJSON(selectedYear, selectedMonth);
         });
-
-        // Add zoom control to the map
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
     </script>
 </body>
 </html>
+
+                   
+
+
+
