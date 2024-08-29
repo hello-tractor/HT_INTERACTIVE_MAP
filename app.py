@@ -12,6 +12,17 @@ geojson_url_2021 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/m
 geojson_url_2022 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/20222_transformed.geojson"
 geojson_url_2023 = "https://raw.githubusercontent.com/Sumbati10/REMOTE_SENSING/main/22023_transformed.geojson"
 
+# URLs of the landjob data
+landjob_url_2024 = "https://raw.githubusercontent.com/Sumbati10/sorting_algorithms/main/output.geojson"
+
+def fetch_landjob_data(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error fetching landjob data: {response.status_code} {response.reason}")
+        return None
+
 # Function to fetch GeoJSON data using GitHub authentication
 def fetch_geojson_with_auth(url):
     headers = {
@@ -31,6 +42,14 @@ geojson_data = {
     '2022': fetch_geojson_with_auth(geojson_url_2022),
     '2023': fetch_geojson_with_auth(geojson_url_2023)
 }
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/definition')
+def definition():
+    return render_template('definition.html')
 
 @app.route('/')
 def index():
@@ -53,32 +72,74 @@ def update_map():
                 'longitude': properties['longitude'],
                 'popup_content': f"""
                     <div style='max-width: 300px;'>
-                        <strong>County:</strong> {properties['County']}<br>
-                        <strong>Subcounty:</strong> {properties['Subcounty']}<br>
-                        <strong>Ward:</strong> {properties['wards']}<br>
-                        <strong>Month:</strong> {properties['month']}<br>
-                        <strong>Year:</strong> {properties['year']}<br>
-                        <strong>Temp(mean):</strong> {properties['Temperature_mean']}<br>
-                        <strong>NDVI-5:</strong> {properties['NVDI 5 PERCENTILE']}<br>
-                        <strong>NDVI-50:</strong> {properties['NVDI 50 PERCENTILE']}<br>
-                        <strong>NDVI-95:</strong> {properties['NVDI 95 PERCENTILE']}<br>
-                        <strong>NDVI-25:</strong> {properties['NVDI 25 PERCENTILE']}<br>
-                        <strong>NVDI (max):</strong> {properties['NVDI (max)']}<br>
-                        <strong>NVDI (min):</strong> {properties['NVDI(min)']}<br>
-                        <strong>NVDI (mean):</strong> {properties['NVDI(MEAN)']}<br>
-                        <strong>Rainfall:</strong> {properties['Rainfall-Precipitataion(mean)']}<br>
-                        <strong>Landcover:</strong> {properties['LANDCOVER(GFSAD)']}<br>
-                        <strong>Worldcover (ESA):</strong> {properties['WORLDCOVERCOVER(ESA)']}<br>
-                        <strong>Agric-Occupation:</strong> {properties['Agriculture_occupation']}<br>
-                        <strong>Population:</strong> {properties['Population']}<br>
-                        <strong>Avg-Agri-Pop:</strong> {properties['Average Agriculturepopulation']}<br>
+                        <div data-name="County"><strong>County:</strong> {properties['County']}</div>
+                        <div data-name="Subcounty"><strong>Subcounty:</strong> {properties['Subcounty']}</div>
+                        <div data-name="Ward"><strong>Ward:</strong> {properties['wards']}</div>
+                        <div data-name="Month"><strong>Month:</strong> {properties['month']}</div>
+                        <div data-name="Year"><strong>Year:</strong> {properties['year']}</div>
+                        <div data-name="Temp(mean)"><strong>Temp(mean):</strong> {properties['Temperature_mean']}</div>
+                        <div data-name="NDVI-5"><strong>NDVI-5:</strong> {properties['NVDI 5 PERCENTILE']}</div>
+                        <div data-name="NDVI-50"><strong>NDVI-50:</strong> {properties['NVDI 50 PERCENTILE']}</div>
+                        <div data-name="NDVI-95"><strong>NDVI-95:</strong> {properties['NVDI 95 PERCENTILE']}</div>
+                        <div data-name="NDVI-25"><strong>NDVI-25:</strong> {properties['NVDI 25 PERCENTILE']}</div>
+                        <div data-name="NDVI (max)"><strong>NVDI (max):</strong> {properties['NVDI (max)']}</div>
+                        <div data-name="NDVI (min)"><strong>NVDI (min):</strong> {properties['NVDI(min)']}</div>
+                        <div data-name="NDVI (mean)"><strong>NVDI (mean):</strong> {properties['NVDI(MEAN)']}</div>
+                        <div data-name="Rainfall"><strong>Rainfall:</strong> {properties['Rainfall-Precipitataion(mean)']}</div>
+                        <div data-name="Landcover"><strong>Landcover:</strong> {properties['LANDCOVER(GFSAD)']}</div>
+                        <div data-name="Worldcover (ESA)"><strong>Worldcover (ESA):</strong> {properties['WORLDCOVERCOVER(ESA)']}</div>
+                        <div data-name="Agric-Occupation"><strong>Agric-Occupation:</strong> {properties['Agriculture_occupation']}</div>
+                        <div data-name="Population"><strong>Population:</strong> {properties['Population']}</div>
+                        <div data-name="Avg-Agri-Pop"><strong>Avg-Agri-Pop:</strong> {properties['Average Agriculturepopulation']}</div>
                     </div>
                 """
             })
         
         return jsonify(data_to_send)
+    
     else:
         return jsonify([])
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route('/search_wards', methods=['GET'])
+def search_counties():
+    query = request.args.get('query').lower()
+    results = []
+
+    for year, data in geojson_data.items():
+        if data is not None:
+            for feature in data['features']:
+                if query in feature['properties']['wards'].lower():
+                    results.append({
+                        'latitude': feature['geometry']['coordinates'][1],
+                        'longitude': feature['geometry']['coordinates'][0],
+                        'wards': feature['properties']['wards']
+                    })
+    
+    return jsonify(results)
+
+@app.route('/fetch_landjob_data', methods=['POST'])
+def fetch_landjob_data_route():
+    landjob_data = fetch_landjob_data(landjob_url_2024)
+    if landjob_data is None:
+        return jsonify([])
+
+    extracted_data = []
+    for feature in landjob_data['features']:
+        properties = feature['properties']
+        extracted_data.append({
+            'latitude': properties['geometry']['coordinates'][1],
+            'longitude': properties['geometry']['coordinates'][0],
+            'popup_content': f"""
+                <div style='max-width: 300px;'>
+                    <div><strong>User ID:</strong> {properties['user_id']}</div>
+                    <div><strong>Location ID:</strong> {properties['location_id']}</div>
+                    <!-- Add more fields as necessary -->
+                </div>
+            """
+        })
+    
+    return jsonify(extracted_data)
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5001)
+
