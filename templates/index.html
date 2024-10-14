@@ -536,7 +536,33 @@
         layer.bindPopup('Farm Serviced 2024');
     }
 });
-
+var Soildata = L.geoJson(null, {
+    style: function (feature) {
+        return {
+            color: "orange",  
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.3
+        };
+    },
+    onEachFeature: function (feature, layer) {
+        // Bind a popup with relevant soil information from properties
+        let popupContent = `
+            <div><strong>Soil Type:</strong> ${feature.properties.SOIL}</div>
+            <div><strong>Soil Class:</strong> ${feature.properties.SOILCLASS}</div>
+            <div><strong>Diagnostic:</strong> ${feature.properties.DIAGNOSTIC}</div>
+            <div><strong>Description:</strong> ${feature.properties.SOIL_DESCR}</div>
+            <div><strong>Drainage:</strong> ${feature.properties.DRAINAGE}</div>
+            <div><strong>Depth:</strong> ${feature.properties.DEPTH}</div>
+            <div><strong>Color:</strong> ${feature.properties.COLOUR}</div>
+            <div><strong>Consistency:</strong> ${feature.properties.CONSISTENC}</div>
+            <div><strong>Province:</strong> ${feature.properties.province}</div>
+            <div><strong>County:</strong> ${feature.properties.county}</div>
+            <div><strong>Subcounty:</strong> ${feature.properties.subcounty}</div>
+        `;
+        layer.bindPopup(popupContent); // Bind popup to each feature
+    }
+});
     
         // Initialize wards layer
         var wardsLayer = L.geoJson(null, {
@@ -571,9 +597,10 @@
         };
 
         var overlayMaps = {
-            "Wards": wardsLayer, 
-            "Farm Serviced 2023": farmServiced2023Layer,
-            "Farm Serviced 2024": farmServiced2024Layer
+            "Sub-County": wardsLayer, 
+            // "Farm Serviced 2023": farmServiced2023Layer,
+            "Farm Serviced 2024": farmServiced2024Layer,
+            "Soil Data Kenya":Soildata
         };
 
         // Add layer control to the map with collapsed option
@@ -673,7 +700,7 @@ data.forEach(function(feature) {
 }
 
 // Initial call to load GeoJSON data for 2021 and January
-updateGeoJSON('2021', '1');
+// updateGeoJSON('2021', '1');
 
 // Dropdown change event handlers
 document.getElementById('yearDropdown').addEventListener('change', function() {
@@ -735,7 +762,7 @@ geojsonLayer.addTo(map);
 }
 
 // Initial call to load GeoJSON data for 2021 and January
-updateGeoJSON('2021', '1');
+// updateGeoJSON('2021', '1');
 
 // Dropdown change event handlers
 document.getElementById('yearDropdown').addEventListener('change', function() {
@@ -867,24 +894,212 @@ document.getElementById('aboutButton').addEventListener('click', function() {
             window.open('/definition', '_blank');
         });
 
-    $.ajax({
-    url: '/fetch_landjob_data',
-    type: 'POST',
-    contentType: 'application/json',
-    data: {},
-    success: function(data) {
-        // Assuming data is an array of features with 'geometry' and other properties
-        farmServiced2024Layer.clearLayers(); 
-        farmServiced2024Layer.addData(data); 
-    },
-    error: function(xhr, status, error) {
-        console.error("An error occurred while fetching landjob data:", error);
+        $.getJSON("https://raw.githubusercontent.com/Sumbati10/sorting_algorithms/main/output.geojson", function(data) {
+    processData(data);
+});
+function processData(data) {
+    data.features.forEach(function(feature) {
+        // Extract properties
+        var activityId = feature.properties.activity_id; // Using activity_id for popup content
+
+        // Directly use the nested GeoJSON object in the 'geometry' field
+        var geoJsonObject = feature.geometry;
+
+        // Create a Leaflet GeoJSON layer using the nested GeoJSON object
+        var geoJsonLayer = L.geoJSON(geoJsonObject, {
+            onEachFeature: function(feature, layer) {
+                // Bind a popup displaying the activity_id
+                layer.bindPopup("Activity ID: " + activityId);
+            }
+        });
+
+        // Add the GeoJSON layer to the farmServiced2024Layer
+        farmServiced2024Layer.addLayer(geoJsonLayer);
+    });
+}
+
+document.getElementById('countyDropdown').addEventListener('change', function() {
+    var selectedCounty = this.value; 
+    
+    
+    if (map.hasLayer(farmServiced2024Layer)) {
+        farmServiced2024Layer.bringToFront(); 
     }
 });
+
+// Define a function that maps soil descriptions to colors
+// Define a function that maps soil classes to colors
+function getColor(soilClass) {
+    const soilClassColors = {
+        'dusky red to dark reddish brown': '#8B0000',
+        'dark grey to greyish brown': '#696969',
+        'dark brown': '#8B4513',
+        'dark reddish brown': '#A52A2A',
+        'strong brown to red': '#B22222',
+        'varying colours': '#D2B48C',  
+        'dark red to dark reddish brown': '#800000',
+        'reddish brown to dark red': '#A52A2A',
+        'dark reddish brown to dark brown': '#A52A2A',
+        'strong brown to brown': '#B22222',
+        'dark brown to yellowish brown': '#8B4513',
+        'reddish brown to very dark greyish brown': '#654321',
+        'brown to dark brown': '#8B4513',
+        'dark brown to dark red': '#A52A2A',
+        'dark brown to greyish brown': '#8B4513',
+        'dark yellowish brown to strong brown': '#CD853F',
+        'reddish brown': '#A52A2A',
+        'dark brown to olive grey': '#556B2F',
+        'dark reddish brown to reddish brown': '#A52A2A',
+        'greyish brown to light olive brown': '#BDB76B',
+        'very dark greyish brown to dark yellowish brown': '#654321',
+        'dark greyish brown to very dark grey': '#2F4F4F',
+        'brown': '#8B4513',
+        'red': '#FF0000',
+        'very dark grey to very dark greyish brown': '#2F4F4F',
+        'dark reddish brown to very dark grey': '#654321',
+        'reddish brown to yellowish red': '#A52A2A',
+        'dark greyish brown': '#696969',
+        'very dark greyish brown to very dark grey': '#2F4F4F',
+        'reddish brown to dark brown': '#8B4513',
+        'dark reddish brown to dusky red': '#800000',
+        'dark grey to black': '#696969',
+        'dark reddish brown to dark yellowish brown': '#A52A2A',
+        'dark reddish brown to strong brown': '#A52A2A',
+        'yellowish red to dark brown': '#D2691E',
+        'very dark grey to brown': '#654321',
+        'greyish brown to black': '#696969',
+        'yellowish red to dark reddish brown': '#D2691E',
+        'dark yellowish brown to yellowish red': '#CD853F',
+        'dark yellowish brown to brown': '#8B4513',
+        'dark red to strong brown': '#B22222',
+        'dark yellowish brown': '#CD853F',
+        'dark brown to dark greyish brown': '#8B4513',
+        'varying colour': '#D2B48C',
+        'dark red': '#8B0000',
+        'brown to dark yellowish brown': '#8B4513',
+        'red to dark red': '#FF0000',
+        'dark grey to dark red': '#696969',
+        'very dark grey to dark greyish brown': '#2F4F4F',
+        'grey to dark grey': '#808080',
+        'dark reddish brown to dark greyish brown': '#A52A2A',
+        'dark red to brown': '#8B0000',
+        'strong brown to reddish yellow and red': '#B22222',
+        'strong brown to reddish yellow': '#B22222',
+        'black to dark brown': '#000000',
+        'reddish brown to brown': '#A52A2A',
+        'greyish brown': '#BDB76B',
+        'dark yellowish brown to reddish brown': '#CD853F',
+        'strong brown to dark red': '#B22222',
+        'yellowish red to strong brown': '#D2691E',
+        'dark yellowish brown to dark brown': '#8B4513',
+        'strong brown to yellowish brown': '#B22222',
+        'red to dark brown': '#FF0000',
+        'dark reddish brown to red': '#800000',
+        'dark grey to olive grey': '#696969',
+        'very dark grey to black': '#2F4F4F',
+        'dark reddish brown to very dark greyish brown': '#654321',
+        'greyish brown to dark brown': '#BDB76B',
+        'very dark greyish brown': '#2F4F4F',
+        'dark grey': '#808080',
+        'red to reddish brown': '#FF0000',
+        'brown to dark reddish brown': '#8B4513',
+        'brown to dark grey': '#8B4513',
+        'dark red to dark brown': '#800000',
+        'dark red to yellowish brown': '#8B0000',
+        'dusky red to brown': '#800000',
+        'very dark greyish brown to olive brown': '#2F4F4F',
+        'yellowish brown to greyish brown': '#CD853F',
+        'light brownish grey to brown': '#8B4513',
+        'dark red to dusky red': '#800000',
+        'greyish brown to reddish brown': '#BDB76B',
+        'pale brown': '#D2B48C',
+        'dark brown to very dark greyish brown': '#8B4513',
+        'dark reddish brown to black': '#A52A2A',
+        'very dark brown': '#654321',
+        'brown to very dark greyish brown': '#8B4513',
+        'very dark greyish brown to black': '#2F4F4F',
+        'dark reddish brown to yellowish red': '#A52A2A',
+        'dark brown to dark reddish brown': '#8B4513',
+        'black': '#000000',
+        'reddish brown to dusky red': '#A52A2A',
+        'dark grey to very dark greyish brown': '#696969',
+        'brown to reddish brown': '#8B4513',
+        'dark grey to grey': '#808080',
+        'dark red to very dark greyish brown': '#800000',
+        'very dark grey to greyish brown': '#2F4F4F',
+        'reddish brown to red': '#A52A2A',
+        'dark brown to very dark grey': '#8B4513',
+        'yellowish red to brown': '#D2691E',
+        'grey to light olive brown': '#808080',
+        'very dark reddish brown': '#654321',
+        'dusky red to dark brown': '#800000',
+        'dark greyish brown to olive grey': '#696969',
+        'yellowish brown to olive grey': '#CD853F',
+        'strong brown': '#B22222',
+        'strong brown to dark reddish brown': '#B22222',
+        'dusky red to dark red': '#800000',
+        'reddish brown to strong brown': '#A52A2A',
+        'dark yellowish brown to dark reddish brown': '#CD853F',
+        'very dark grey to strong brown': '#2F4F4F',
+        'dark greyish brown to yellowish brown': '#696969',
+        'reddish brown to black': '#A52A2A',
+        'yellowish red to dark greyish brown': '#D2691E',
+        'dark brown to dark grey': '#8B4513',
+        'strong brown to pale brown': '#B22222',
+        'reddish yellow to dark brown': '#D2691E',
+        'brown to very dark grey': '#8B4513',
+        'red to dark yellowish brown': '#FF0000',
+        'dark reddish brown to dark red': '#A52A2A',
+        'light yellowish brown to olive grey': '#F5DEB3',
+        'grey to brown': '#808080',
+        'pale brown to grey': '#D2B48C',
+        // Default color if no match
+        'default': '#FFEDA0'
+    };
+
+    // Return the matching color or a default if soil class is not found
+    return soilClassColors[soilClass] || soilClassColors['default'];
+}
+
+
+// Fetch Soil GeoJSON Data from Flask backend
+// Fetch Soil GeoJSON Data from Flask backend and add it to the existing Soildata layer
+$.getJSON("/soil_data", function(geojsonData) {
+    Soildata.addData(geojsonData);  // Add GeoJSON data to the Soildata layer
+    
+   
+    Soildata.eachLayer(function(layer) {
+        layer.setStyle({
+            color: getColor(layer.feature.properties.COLOUR),  // Set boundary color based on soil color
+            weight: 0,
+            opacity: 2,
+            fillOpacity: 0.3
+        });
+
+        // Bind popup to display soil properties
+        var popupContent = "<strong>Soil Type:</strong> " + layer.feature.properties.SOIL + "<br>" +
+                           "<strong>Soil Class:</strong> " + layer.feature.properties.SOILCLASS + "<br>" +
+                           "<strong>Soil Description:</strong> " + layer.feature.properties.SOIL_DESCR + "<br>" +
+                           "<strong>Drainage:</strong> " + layer.feature.properties.DRAINAGE + "<br>" +
+                           "<strong>Color:</strong> " + layer.feature.properties.COLOUR + "<br>" +
+                           "<strong>Depth:</strong> " + layer.feature.properties.DEPTH + "<br>" +
+                           "<strong>Consistence:</strong> " + layer.feature.properties.CONSISTENC + "<br>" +
+                           "<strong>Province:</strong> " + layer.feature.properties.province + "<br>" +
+                           "<strong>County:</strong> " + layer.feature.properties.county + "<br>" +
+                           "<strong>Subcounty:</strong> " + layer.feature.properties.subcounty + "<br>" +
+                           "<strong>DHIS ID:</strong> " + layer.feature.properties.dhis2_id + "<br>" +
+                           "<strong>Shape Area:</strong> " + layer.feature.properties.Shape__Area.toFixed(2) + " ha<br>" +
+                           "<strong>Shape Length:</strong> " + layer.feature.properties.Shape__Length.toFixed(2) + " km";
+        layer.bindPopup(popupContent);
+    });
+});
+
+
 
 
    </script>
     
    </body>
 </html>
+           
            
