@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -123,4 +124,4 @@ def get_soil_data():
     return jsonify(soil_geojson_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+        app.run(host='0.0.0.0', port=os.getenv("PORT", default=5000), debug=False)
