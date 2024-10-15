@@ -11,4 +11,4 @@ RUN pip install -r requirements.txt
 # Copy the content of the local src directory to the working directory
 COPY . ./
 # run the flask app using gunicorn
-CMD ["gunicorn", "--timeout", "300", "app:app"]
+CMD ["python", "app.py"]
